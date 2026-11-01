@@ -56,6 +56,11 @@ export async function executeCommand(m: Machine, command: string, value = ''): P
       const reply = await m.sendRaw(value);
       return { reply: reply ? hex(reply) : null };
     }
+    case 'raw_exact': {
+      // Sent byte for byte: for frames with data after the CRC.
+      const reply = await m.sendRaw(value, false);
+      return { reply: reply ? hex(reply) : null };
+    }
     default:
       throw new Error(`unknown command "${command}"`);
   }
