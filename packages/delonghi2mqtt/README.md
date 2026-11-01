@@ -6,6 +6,14 @@ MQTT discovery. Use it when both Home Assistant and Homebridge need the machine
 [homebridge-delonghi-coffee](../homebridge-delonghi-coffee) directly. The
 Bluetooth requirements (ESPHome proxy or local adapter) are described there.
 
+> **Based on the work of [Sergey Arbuzov](https://github.com/Arbuzov) and contributors.**
+> The De'Longhi Bluetooth protocol (frame format, CRC, status and alarm decoding,
+> captured beverage commands) and the machine catalog used here come from his Home
+> Assistant integration
+> [home_assistant_delonghi_primadonna](https://github.com/Arbuzov/home_assistant_delonghi_primadonna)
+> (Apache-2.0). This project is a port of that work to Node.js for Homebridge and MQTT;
+> if you use Home Assistant only, his integration is the original — go give it a ⭐.
+
 ```sh
 git clone https://github.com/bubez81/delonghi-homekit && cd delonghi-homekit
 npm install && npm run build

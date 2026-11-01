@@ -4,6 +4,14 @@ Apple Home for De'Longhi Bluetooth coffee machines — PrimaDonna, Dinamica Plus
 Eletta, Maestosa and the other models of the De'Longhi Coffee Link app with a
 Bluetooth connection. Local, no cloud, no account.
 
+> **Based on the work of [Sergey Arbuzov](https://github.com/Arbuzov) and contributors.**
+> The De'Longhi Bluetooth protocol (frame format, CRC, status and alarm decoding,
+> captured beverage commands) and the machine catalog used here come from his Home
+> Assistant integration
+> [home_assistant_delonghi_primadonna](https://github.com/Arbuzov/home_assistant_delonghi_primadonna)
+> (Apache-2.0). This project is a port of that work to Node.js for Homebridge and MQTT;
+> if you use Home Assistant only, his integration is the original — go give it a ⭐.
+
 ## What you get
 
 One **Coffee machine** accessory:
@@ -99,5 +107,6 @@ sequence, please open an issue.
 ## Credits
 
 Protocol and machine catalog from
-[Arbuzov/home_assistant_delonghi_primadonna](https://github.com/Arbuzov/home_assistant_delonghi_primadonna)
-(Apache-2.0). Not affiliated with De'Longhi.
+[home_assistant_delonghi_primadonna](https://github.com/Arbuzov/home_assistant_delonghi_primadonna)
+by [Sergey Arbuzov](https://github.com/Arbuzov) and contributors (Apache-2.0).
+Not affiliated with De'Longhi.

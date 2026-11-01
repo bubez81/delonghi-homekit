@@ -2,9 +2,14 @@ delonghi-homekit
 Copyright 2026 bubez81
 
 This product includes software and data derived from
-home_assistant_delonghi_primadonna (https://github.com/Arbuzov/home_assistant_delonghi_primadonna),
-Copyright Arbuzov and contributors, licensed under the Apache License, Version 2.0:
-the De'Longhi BLE protocol (frame layout, CRC, status/alarm decoding, captured beverage
-commands) and the machine catalog in packages/delonghi2mqtt/data/models.json.
+home_assistant_delonghi_primadonna
+  https://github.com/Arbuzov/home_assistant_delonghi_primadonna
+  Copyright Sergey Arbuzov (https://github.com/Arbuzov) and contributors
+  Licensed under the Apache License, Version 2.0
+namely the De'Longhi BLE protocol (frame layout, CRC, status/alarm decoding,
+captured beverage commands, settings/statistics/profile messages) and the
+machine catalog in packages/core/data/models.json. These parts were ported
+from Python to TypeScript and modified.
 
-Beverage ingredient ids follow longshot (https://github.com/mmastrac/longshot).
+Beverage ingredient ids follow longshot by Matt Mastracci
+  https://github.com/mmastrac/longshot

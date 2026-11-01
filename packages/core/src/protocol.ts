@@ -1,7 +1,9 @@
 /**
  * De'Longhi ECAM BLE protocol.
  *
- * Ported from Arbuzov/home_assistant_delonghi_primadonna (Apache-2.0),
+ * Ported from home_assistant_delonghi_primadonna by Sergey Arbuzov and
+ * contributors (https://github.com/Arbuzov/home_assistant_delonghi_primadonna,
+ * Apache-2.0),
  * custom_components/delonghi_primadonna/{const,device,machine_switch}.py.
  *
  * Framing:

@@ -3,6 +3,14 @@
 Local control of De'Longhi Bluetooth coffee machines — PrimaDonna, Dinamica
 Plus, Eletta, Maestosa and the other Coffee Link models with Bluetooth.
 
+> **Based on the work of [Sergey Arbuzov](https://github.com/Arbuzov) and contributors.**
+> The De'Longhi Bluetooth protocol (frame format, CRC, status and alarm decoding,
+> captured beverage commands) and the machine catalog used here come from his Home
+> Assistant integration
+> [home_assistant_delonghi_primadonna](https://github.com/Arbuzov/home_assistant_delonghi_primadonna)
+> (Apache-2.0). This project is a port of that work to Node.js for Homebridge and MQTT;
+> if you use Home Assistant only, his integration is the original — go give it a ⭐.
+
 ## Just Apple Home → [homebridge-delonghi-coffee](packages/homebridge-delonghi-coffee)
 
 Install **homebridge-delonghi-coffee** from the Homebridge UI. It talks to the
@@ -48,6 +56,7 @@ default. Reports welcome.
 ## Credits
 
 The Bluetooth protocol and the machine catalog come from
-[Arbuzov/home_assistant_delonghi_primadonna](https://github.com/Arbuzov/home_assistant_delonghi_primadonna)
-(Apache-2.0); beverage ingredient ids follow [longshot](https://github.com/mmastrac/longshot).
+[home_assistant_delonghi_primadonna](https://github.com/Arbuzov/home_assistant_delonghi_primadonna)
+by [Sergey Arbuzov](https://github.com/Arbuzov) and its contributors (Apache-2.0);
+beverage ingredient ids follow [longshot](https://github.com/mmastrac/longshot) by Matt Mastracci.
 Not affiliated with De'Longhi. Apache-2.0, see [NOTICE](NOTICE).
