@@ -68,7 +68,7 @@ Use the Homebridge UI, or:
 | `beverageNames` | names shown in Home, e.g. `{"Espresso Coffee": "Espresso"}` |
 | `sensors` | attention sensors, default `true` |
 | `autoPowerOn` | switch the machine on when a beverage is requested, default `true` |
-| `allowPowerOff` | send standby when the power switch is turned off. Default `false`: the command is confirmed only on some PrimaDonna/Maestosa models and does not work on the Dinamica Plus |
+| `allowPowerOff` | send standby when the power switch is turned off. Default `false`: the command is confirmed only on some PrimaDonna/Maestosa models and does not work on the Dinamica Plus (see *Standby* below) |
 | `recipeOverrides` | per-beverage quantities, e.g. `{"Cappuccino": {"coffeeQty": 90, "milkQty": 200, "taste": 4}}` |
 
 ### Also want Home Assistant?
@@ -86,6 +86,15 @@ Tested on a Dinamica PLUS 370.95.T through an ESPHome proxy (status, sensors,
 power on, espresso). Not yet verified: milk beverages (their commands are
 generated from the De'Longhi catalog), the server-Bluetooth connection on real
 hardware, other models. Please open an issue with your model and what works.
+
+## Standby
+
+The standby frame `0d 07 84 0f 01 01 00 41` works on some PrimaDonna and
+Maestosa models. On a Dinamica PLUS 370.95.T none of these had any effect
+(no reply, machine stays ready): `84 0f 01 01`, the same followed by a 4-byte
+timestamp after the CRC, `84 f0 01 01`, `84 0f 01 00`, `84 0f 00 01`. On such
+machines use the machine's auto-off (15 min minimum). If you find a working
+sequence, please open an issue.
 
 ## Credits
 

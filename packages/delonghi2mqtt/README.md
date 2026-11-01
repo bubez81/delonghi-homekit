@@ -84,6 +84,7 @@ Commands on `delonghi/<id>/set/<command>`:
 | `water_temperature` | `low` `medium` `high` `highest` |
 | `refresh` | re-read settings and statistics |
 | `raw` | hex frame (CRC recomputed); the reply is published as an `event` |
+| `raw_exact` | hex frame sent byte for byte (for frames with data after the CRC) |
 
 ## Running as a service
 
