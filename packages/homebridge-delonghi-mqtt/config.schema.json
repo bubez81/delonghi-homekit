@@ -1,0 +1,33 @@
+{
+  "pluginAlias": "DelonghiMqtt",
+  "pluginType": "platform",
+  "singular": true,
+  "headerDisplay": "Exposes De'Longhi coffee machines published on MQTT by the delonghi2mqtt bridge.",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": { "title": "Name", "type": "string", "default": "DelonghiMqtt", "required": true },
+      "mqttUrl": { "title": "MQTT broker URL", "type": "string", "default": "mqtt://localhost:1883", "required": true },
+      "username": { "title": "MQTT username", "type": "string" },
+      "password": { "title": "MQTT password", "type": "string", "x-schema-form": { "type": "password" } },
+      "baseTopic": { "title": "Base topic", "type": "string", "default": "delonghi" },
+      "machines": {
+        "title": "Machines (leave empty to add every machine found on MQTT)",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": { "title": "Machine id (as in the bridge config)", "type": "string", "required": true },
+            "name": { "title": "Name in Home", "type": "string" },
+            "beverages": {
+              "title": "Beverages to expose as switches (catalog names, e.g. \"Espresso Coffee\", \"Cappuccino\")",
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "sensors": { "title": "Expose water/grounds/beans/descale/filter sensors", "type": "boolean", "default": true }
+          }
+        }
+      }
+    }
+  }
+}

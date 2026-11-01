@@ -1,0 +1,18 @@
+{
+  "logLevel": "info",
+  "mqtt": {
+    "url": "mqtt://localhost:1883",
+    "username": "",
+    "password": "",
+    "baseTopic": "delonghi",
+    "haDiscovery": true,
+    "haDiscoveryPrefix": "homeassistant"
+  },
+  "machines": [
+    {
+      "id": "coffee",
+      "name": "Coffee machine",
+      "transport": { "type": "esphome", "host": "192.168.1.50", "encryptionKey": "<base64 API key>" }
+    }
+  ]
+}

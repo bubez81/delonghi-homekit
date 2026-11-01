@@ -1,0 +1,6 @@
+{
+  "mqtt": { "url": "mqtt://localhost:1883" },
+  "machines": [
+    { "id": "coffee", "name": "Coffee machine", "transport": { "type": "noble" } }
+  ]
+}

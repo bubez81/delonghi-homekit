@@ -1,0 +1,60 @@
+{
+  "name": "delonghi2mqtt",
+  "version": "0.1.0",
+  "description": "Bridge between De'Longhi BLE coffee machines (PrimaDonna, Dinamica, Eletta...) and MQTT, with Home Assistant discovery",
+  "license": "Apache-2.0",
+  "type": "module",
+  "bin": {
+    "delonghi2mqtt": "dist/cli.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "LICENSE",
+    "NOTICE",
+    "README.md",
+    "config.example.json",
+    "config.noble.example.json",
+    "data",
+    "dist",
+    "launchd",
+    "!dist/test/"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "node --test \"dist/test/*.test.js\"",
+    "start": "node dist/cli.js",
+    "prepack": "cp ../../LICENSE ../../NOTICE . && npm run build"
+  },
+  "dependencies": {
+    "@2colors/esphome-native-api": "^1.3.6",
+    "@stoprocent/noble": "^2.8.0",
+    "mqtt": "^5.16.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "typescript": "5.9"
+  },
+  "author": "bubez81",
+  "homepage": "https://github.com/bubez81/delonghi-homekit#readme",
+  "bugs": {
+    "url": "https://github.com/bubez81/delonghi-homekit/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bubez81/delonghi-homekit.git",
+    "directory": "packages/delonghi2mqtt"
+  },
+  "keywords": [
+    "delonghi",
+    "coffee",
+    "mqtt",
+    "home-assistant",
+    "bluetooth",
+    "esphome",
+    "primadonna",
+    "dinamica"
+  ]
+}

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  LaunchAgent for delonghi2mqtt on macOS (e.g. the Mac mini running Homebridge).
+  Edit the paths, then:
+    cp com.delonghi2mqtt.plist ~/Library/LaunchAgents/
+    launchctl load -w ~/Library/LaunchAgents/com.delonghi2mqtt.plist
+  A LaunchAgent (not a LaunchDaemon) is needed for the local Bluetooth
+  transport: macOS grants Bluetooth access per logged-in user.
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.delonghi2mqtt</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/opt/homebrew/bin/node</string>
+    <string>/Users/USER/delonghi-homekit/packages/delonghi2mqtt/dist/cli.js</string>
+    <string>-c</string>
+    <string>/Users/USER/.delonghi2mqtt/config.json</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>ThrottleInterval</key>
+  <integer>10</integer>
+  <key>StandardOutPath</key>
+  <string>/Users/USER/.delonghi2mqtt/delonghi2mqtt.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/USER/.delonghi2mqtt/delonghi2mqtt.log</string>
+</dict>
+</plist>
