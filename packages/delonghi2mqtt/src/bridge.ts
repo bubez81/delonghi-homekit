@@ -248,6 +248,18 @@ export class MqttBridge {
       );
     }
 
+    // Power switch following the real machine state. "OFF" sends standby only
+    // when allowed; otherwise the bridge ignores it and the state stays on.
+    add(
+      'switch',
+      'power_switch',
+      base('power_switch', 'Power', {
+        command_topic: this.t(id, 'set', 'power'),
+        state_topic: stateTopic,
+        value_template: "{{ 'ON' if value_json.power else 'OFF' }}",
+        icon: 'mdi:coffee-maker',
+      }),
+    );
     add('button', 'power_on', base('power_on', 'Power on', { command_topic: this.t(id, 'set', 'power_on'), icon: 'mdi:power' }));
     if (m.opts.allowPowerOff) {
       add('button', 'power_off', base('power_off', 'Standby', { command_topic: this.t(id, 'set', 'power_off'), icon: 'mdi:power-standby' }));
