@@ -276,6 +276,7 @@ export const COMMANDS = {
   /** Standby: only verified on some models (not on Dinamica Plus 370.95). */
   powerOff: () => frame([CMD.APP_CONTROL, 0x0f, 0x01, 0x01]),
   readSettings: () => frame([CMD.READ_SETTING, 0x0f, 0x00, 0x3f, 0x01]),
+  readSetting: (param: number) => frame([CMD.READ_SETTING, 0x0f, (param >> 8) & 0xff, param & 0xff, 0x01]),
   writeSetting: (param: number, value: number) =>
     frame([CMD.WRITE_SETTING, 0x0f, (param >> 8) & 0xff, param & 0xff, 0x00, 0x00, 0x00, value & 0xff]),
   statistics: (start: number, count: number) =>

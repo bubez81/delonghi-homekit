@@ -136,7 +136,7 @@ export class MqttBridge {
     }
     this.log.info(`[${id}] command ${command} ${value}`);
     try {
-      if ((command === 'brew' || command === 'beverage') && value && value !== 'none') {
+      if ((command === 'brew' || command === 'beverage') && !['', 'none', 'idle'].includes(value.toLowerCase())) {
         this.event(m, 'brew_requested', { beverage: value });
       }
       const res = await executeCommand(m, command, value);
@@ -224,7 +224,7 @@ export class MqttBridge {
     });
     sensor('nozzle', 'Nozzle', '{{ value_json.nozzle }}', { icon: 'mdi:coffee', entity_category: 'diagnostic' });
     sensor('progress', 'Progress', '{{ value_json.progress }}', { unit_of_measurement: '%', icon: 'mdi:progress-clock' });
-    sensor('current_beverage', 'Current beverage', "{{ value_json.beverage or 'none' }}", { icon: 'mdi:coffee-to-go' });
+    sensor('current_beverage', 'Current beverage', "{{ value_json.beverage or 'Idle' }}", { icon: 'mdi:coffee-to-go' });
 
     const stats: Array<[string, string, string, string?]> = [
       ['total_coffee', 'Total coffee', 'mdi:coffee'],
@@ -265,8 +265,8 @@ export class MqttBridge {
       base('beverage', 'Beverage', {
         command_topic: this.t(id, 'set', 'brew'),
         state_topic: stateTopic,
-        value_template: "{{ value_json.beverage or 'none' }}",
-        options: ['none', ...m.beverages],
+        value_template: "{{ value_json.beverage or 'Idle' }}",
+        options: ['Idle', ...m.beverages],
         icon: 'mdi:coffee',
       }),
     );

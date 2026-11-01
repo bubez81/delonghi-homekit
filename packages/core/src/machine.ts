@@ -313,7 +313,16 @@ export class Machine extends EventEmitter {
       if (m) this.applyMonitor(m);
     } else if (cmd === CMD.READ_SETTING) {
       const s = parseSettingRead(f);
-      if (s && s.param === SETTING.SWITCHES) {
+      if (s && s.param === SETTING.WATER_HARDNESS) {
+        this.setState({ settings: { ...this.state.settings, water_hardness: WATER_HARDNESS_OPTIONS[s.value] ?? null } });
+      } else if (s && s.param === SETTING.WATER_TEMPERATURE) {
+        this.setState({
+          settings: { ...this.state.settings, water_temperature: WATER_TEMPERATURE_OPTIONS[s.value] ?? null },
+        });
+      } else if (s && s.param === SETTING.AUTO_OFF) {
+        const option = Object.entries(AUTO_OFF_OPTIONS).find(([, v]) => v === s.value)?.[0] ?? null;
+        this.setState({ settings: { ...this.state.settings, auto_off: option } });
+      } else if (s && s.param === SETTING.SWITCHES) {
         this.settingsRaw = s.value;
         this.setState({
           settings: {
@@ -422,8 +431,20 @@ export class Machine extends EventEmitter {
 
   // ------------------------------------------------------------- actions
 
+  /** Read one settings parameter (0x95); the reply is applied in onFrame. */
+  private readSetting(param: number): Promise<Buffer | undefined> {
+    return this.request(
+      COMMANDS.readSetting(param),
+      f => f[2] === CMD.READ_SETTING && ((f[4] << 8) | f[5]) === param,
+      3_000,
+    );
+  }
+
   async readSettings(): Promise<void> {
-    await this.request(COMMANDS.readSettings(), f => f[2] === CMD.READ_SETTING);
+    await this.readSetting(SETTING.SWITCHES);
+    await this.readSetting(SETTING.WATER_HARDNESS);
+    await this.readSetting(SETTING.WATER_TEMPERATURE);
+    await this.readSetting(SETTING.AUTO_OFF);
   }
 
   async refreshStatistics(force = false): Promise<void> {
@@ -539,13 +560,13 @@ export class Machine extends EventEmitter {
   }
 
   async setSwitchSetting(key: keyof typeof SETTINGS_BITS, on: boolean): Promise<void> {
-    if (this.settingsRaw === null) await this.readSettings();
+    if (this.settingsRaw === null) await this.readSetting(SETTING.SWITCHES);
     let raw = this.settingsRaw ?? 0x81;
     raw = on ? raw | SETTINGS_BITS[key] : raw & ~SETTINGS_BITS[key];
     await this.request(COMMANDS.writeSetting(SETTING.SWITCHES, raw), f => f[2] === CMD.WRITE_SETTING);
     this.settingsRaw = raw;
     this.setState({ settings: { ...this.state.settings, [key]: on } });
-    await this.readSettings();
+    await this.readSetting(SETTING.SWITCHES);
   }
 
   async setAutoOff(option: string): Promise<void> {
@@ -553,6 +574,7 @@ export class Machine extends EventEmitter {
     if (v === undefined) throw new Error(`auto_off must be one of ${Object.keys(AUTO_OFF_OPTIONS).join(', ')}`);
     await this.request(COMMANDS.writeSetting(SETTING.AUTO_OFF, v), f => f[2] === CMD.WRITE_SETTING);
     this.setState({ settings: { ...this.state.settings, auto_off: option } });
+    await this.readSetting(SETTING.AUTO_OFF);
   }
 
   async setWaterHardness(option: string): Promise<void> {
@@ -560,6 +582,7 @@ export class Machine extends EventEmitter {
     if (v < 0) throw new Error(`water_hardness must be one of ${WATER_HARDNESS_OPTIONS.join(', ')}`);
     await this.request(COMMANDS.writeSetting(SETTING.WATER_HARDNESS, v), f => f[2] === CMD.WRITE_SETTING);
     this.setState({ settings: { ...this.state.settings, water_hardness: option } });
+    await this.readSetting(SETTING.WATER_HARDNESS);
   }
 
   async setWaterTemperature(option: string): Promise<void> {
@@ -567,6 +590,7 @@ export class Machine extends EventEmitter {
     if (v < 0) throw new Error(`water_temperature must be one of ${WATER_TEMPERATURE_OPTIONS.join(', ')}`);
     await this.request(COMMANDS.writeSetting(SETTING.WATER_TEMPERATURE, v), f => f[2] === CMD.WRITE_SETTING);
     this.setState({ settings: { ...this.state.settings, water_temperature: option } });
+    await this.readSetting(SETTING.WATER_TEMPERATURE);
   }
 
   /** Send a raw frame given as hex; the CRC is recomputed when `fixCrc`. */

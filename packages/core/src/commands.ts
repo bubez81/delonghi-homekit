@@ -25,7 +25,7 @@ export async function executeCommand(m: Machine, command: string, value = ''): P
       return {};
     case 'brew':
     case 'beverage':
-      if (!value || value === 'none') await m.cancelBeverage();
+      if (['', 'none', 'idle'].includes(value.trim().toLowerCase())) await m.cancelBeverage();
       else await m.brewBeverage(value);
       return {};
     case 'cancel':
