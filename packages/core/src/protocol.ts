@@ -366,15 +366,33 @@ export interface RecipeSpec {
 }
 
 /** Build the start command for a recipe, preferring captured frames. */
+/**
+ * Build the start command for a recipe, preferring captured frames.
+ *
+ * Generated frames follow the Coffee Link capture documented in
+ * home_assistant_delonghi_primadonna PR #281: tags in ascending order, and
+ * for milk drinks the milk carafe accessory (`1c 02`) last. Milk quantities
+ * are in tenths of a second, as in the catalog.
+ */
 export function recipeStartCommand(recipe: RecipeSpec, useLegacy = true): Buffer {
   if (useLegacy && LEGACY_START[recipe.id]) return withCrc(LEGACY_START[recipe.id]);
   const ing: Ingredients = [];
   if (recipe.coffeeQty > 0) ing.push([INGREDIENT.COFFEE, recipe.coffeeQty]);
+  if (recipe.coffeeQty > 0) ing.push([INGREDIENT.TASTE, recipe.taste ?? 3]);
   if (recipe.milkQty > 0) ing.push([INGREDIENT.MILK, recipe.milkQty]);
   if (recipe.hotWaterQty && recipe.hotWaterQty > 0) ing.push([INGREDIENT.HOT_WATER, recipe.hotWaterQty]);
-  if (recipe.coffeeQty > 0) ing.push([INGREDIENT.TASTE, recipe.taste ?? 3]);
-  if (recipe.coffeeQty === 0) ing.push([INGREDIENT.ACCESSORY, 1]);
+  if (recipe.milkQty > 0) ing.push([INGREDIENT.ACCESSORY, 2]);
+  else if (recipe.coffeeQty === 0) ing.push([INGREDIENT.ACCESSORY, 1]);
   return beverageStart(recipe.id, ing);
+}
+
+/** The machine's ATT MTU is 23: longer frames are written in 20-byte chunks. */
+export const MAX_WRITE = 20;
+
+export function chunks(frame: Uint8Array, size = MAX_WRITE): Buffer[] {
+  const out: Buffer[] = [];
+  for (let i = 0; i < frame.length; i += size) out.push(Buffer.from(frame.subarray(i, i + size)));
+  return out;
 }
 
 // --------------------------------------------------------------- responses

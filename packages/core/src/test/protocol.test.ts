@@ -4,6 +4,7 @@ import {
   COMMANDS,
   FrameAssembler,
   LEGACY_START,
+  chunks,
   hasValidCrc,
   hex,
   isDispensing,
@@ -77,6 +78,13 @@ test('settings and statistics parsing', () => {
   assert.equal(s.get(3000), 0x109f);
 });
 
+test('frames longer than 20 bytes are written in chunks', () => {
+  const f = parseHex('0d 18 83 f0 0b 01 00 02 01 00 4f 02 03 04 00 09 00 52 0b 01 1c 02 06 12 a0');
+  const parts = chunks(f);
+  assert.deepEqual(parts.map(p => p.length), [20, 5]);
+  assert.ok(hasValidCrc(f)); // the Espresso Macchiato captured from Coffee Link (PR #281)
+});
+
 test('assembler splits and joins chunks', () => {
   const a = new FrameAssembler();
   const f = parseHex(KNOWN.ready);
@@ -93,8 +101,10 @@ test('model guess and recipes for Dinamica Plus D1533201', () => {
   assert.ok(r.some(x => x.name === 'Cappuccino'));
   assert.ok(r.some(x => x.name === 'Custom 3'));
   const capp = r.find(x => x.name === 'Cappuccino')!;
-  // coffee 80 (0x0050), milk 160 (0x00a0), taste 3
-  assert.equal(hex(recipeStartCommand(capp)).slice(0, 44), '0d 10 83 f0 07 01 01 00 50 09 00 a0 02 03 06');
+  // coffee 80 (0x0050), taste 3, milk 160 (0x00a0), milk carafe; ascending tags
+  assert.equal(hex(recipeStartCommand(capp)).slice(0, 50), '0d 12 83 f0 07 01 01 00 50 02 03 09 00 a0 1c 02 06');
+  const hotMilk = r.find(x => x.name === 'Hot Milk')!;
+  assert.equal(hex(recipeStartCommand(hotMilk)).slice(0, 35), '0d 0d 83 f0 0c 01 09 01 c2 1c 02 06');
   const hw = r.find(x => x.id === 16)!;
   assert.equal(hex(recipeStartCommand(hw)), '0d 0d 83 f0 10 01 0f 00 fa 1c 01 06 04 b4');
 });

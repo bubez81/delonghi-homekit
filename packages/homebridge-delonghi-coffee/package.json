@@ -1,7 +1,7 @@
 {
   "name": "homebridge-delonghi-coffee",
   "displayName": "De'Longhi Coffee",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Apple Home for De'Longhi Bluetooth coffee machines (PrimaDonna, Dinamica, Eletta, Maestosa...) via an ESPHome Bluetooth proxy or the server's Bluetooth",
   "license": "Apache-2.0",
   "type": "module",

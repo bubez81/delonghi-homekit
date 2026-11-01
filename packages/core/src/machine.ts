@@ -13,6 +13,7 @@ import {
   WATER_HARDNESS_OPTIONS,
   WATER_TEMPERATURE_OPTIONS,
   beverageStop,
+  chunks,
   hex,
   isDispensing,
   parseHex,
@@ -294,7 +295,7 @@ export class Machine extends EventEmitter {
           })
         : Promise.resolve(undefined);
       this.log.debug(`[${this.opts.id}] >> ${hex(frame)}`);
-      await this.transport.write(frame);
+      for (const part of chunks(frame)) await this.transport.write(part);
       return wait;
     };
     const result = this.queue.then(run, run);
@@ -528,9 +529,12 @@ export class Machine extends EventEmitter {
     // Give the machine time to leave "off" after the power command.
     while (Date.now() - started < timeoutMs) {
       if (aborted()) return;
-      if (this.state.machine_state === 'ready' && !this.state.dispensing && this.state.alarms.length === 0) return;
-      if (this.state.machine_state === 'ready' && this.state.alarms.length > 0) {
-        throw new Error(`machine reports ${this.state.alarms.join(', ')}`);
+      // clean_knob is raised after every milk drink until the clean prompt on
+      // the machine is answered; coffee-only starts are still accepted.
+      const blocking = this.state.alarms.filter(a => a !== 'clean_knob');
+      if (this.state.machine_state === 'ready' && !this.state.dispensing && blocking.length === 0) return;
+      if (this.state.machine_state === 'ready' && blocking.length > 0) {
+        throw new Error(`machine reports ${blocking.join(', ')}`);
       }
       await sleep(2_000);
       void this.poll();
