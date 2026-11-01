@@ -1,0 +1,56 @@
+{
+  "name": "homebridge-delonghi-coffee",
+  "displayName": "De'Longhi Coffee",
+  "version": "0.1.0",
+  "description": "Apple Home for De'Longhi Bluetooth coffee machines (PrimaDonna, Dinamica, Eletta, Maestosa...) via an ESPHome Bluetooth proxy or the server's Bluetooth",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "files": [
+    "LICENSE",
+    "NOTICE",
+    "README.md",
+    "config.schema.json",
+    "dist"
+  ],
+  "keywords": [
+    "homebridge-plugin",
+    "homebridge",
+    "delonghi",
+    "coffee",
+    "espresso",
+    "homekit",
+    "bluetooth",
+    "esphome",
+    "primadonna",
+    "dinamica"
+  ],
+  "engines": {
+    "node": ">=20",
+    "homebridge": "^1.8.0 || ^2.0.0-beta.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json --noEmit && esbuild src/index.ts --bundle --platform=node --format=esm --target=node20 --outfile=dist/index.js --external:mqtt --external:@stoprocent/noble --external:@2colors/esphome-native-api --external:homebridge --banner:js=\"import { createRequire as __cr } from 'module'; const require = __cr(import.meta.url);\"",
+    "prepack": "cp ../../LICENSE ../../NOTICE . && npm run build"
+  },
+  "devDependencies": {
+    "delonghi-core": "*",
+    "esbuild": "0.25.10",
+    "homebridge": "^2.5.0"
+  },
+  "dependencies": {
+    "@2colors/esphome-native-api": "^1.3.6",
+    "@stoprocent/noble": "^2.8.0",
+    "mqtt": "^5.16.1"
+  },
+  "author": "bubez81",
+  "homepage": "https://github.com/bubez81/delonghi-homekit#readme",
+  "bugs": {
+    "url": "https://github.com/bubez81/delonghi-homekit/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bubez81/delonghi-homekit.git",
+    "directory": "packages/homebridge-delonghi-coffee"
+  }
+}

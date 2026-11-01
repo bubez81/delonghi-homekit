@@ -1,27 +1,8 @@
 import { readFileSync } from 'node:fs';
 import type { MqttOptions } from './bridge.js';
-import type { EsphomeOptions } from './transports/esphome.js';
+import type { MachineSetup } from 'delonghi-core';
 
-export type TransportConfig = ({ type: 'noble' } & { scanTimeoutMs?: number }) | ({ type: 'esphome' } & EsphomeOptions);
-
-export interface MachineConfig {
-  /** Topic-safe id, e.g. "dinamica". */
-  id: string;
-  name?: string;
-  /** BLE MAC address. Optional: the first machine found is used when omitted. */
-  address?: string;
-  /** Advertised name, e.g. "D1533201" (used by noble on macOS, and to guess the model). */
-  bleName?: string;
-  /** Product code from the catalog, e.g. "0132215332". Guessed from bleName when omitted. */
-  productCode?: string;
-  transport: TransportConfig;
-  allowPowerOff?: boolean;
-  autoPowerOn?: boolean;
-  pollIntervalSec?: number;
-  statsIntervalSec?: number;
-  /** Per-beverage overrides, e.g. {"Cappuccino": {"coffeeQty": 90, "milkQty": 200, "taste": 4}} */
-  recipeOverrides?: Record<string, { coffeeQty?: number; milkQty?: number; hotWaterQty?: number; taste?: number }>;
-}
+export type MachineConfig = MachineSetup;
 
 export interface Config {
   logLevel?: 'debug' | 'info' | 'warn' | 'error';

@@ -1,0 +1,94 @@
+{
+  "pluginAlias": "DelonghiCoffee",
+  "pluginType": "platform",
+  "singular": true,
+  "headerDisplay": "De'Longhi Bluetooth coffee machines in Apple Home. The machine accepts one Bluetooth connection at a time: close the Coffee Link app and remove other integrations that connect to it.",
+  "footerDisplay": "Leave MAC address and name empty to use the first De'Longhi machine found; the values to pin are written to the log.",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": { "title": "Name", "type": "string", "default": "De'Longhi Coffee", "required": true },
+      "machines": {
+        "title": "Machines",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": { "title": "Name in Home", "type": "string", "default": "Coffee machine", "required": true },
+            "connection": {
+              "title": "Bluetooth connection",
+              "type": "string",
+              "default": "esphome",
+              "oneOf": [
+                { "title": "ESPHome Bluetooth proxy", "enum": ["esphome"] },
+                { "title": "This server's Bluetooth", "enum": ["local"] },
+                { "title": "delonghi2mqtt bridge (MQTT)", "enum": ["mqtt"] }
+              ]
+            },
+            "esphomeHost": {
+              "title": "ESPHome proxy host / IP",
+              "type": "string",
+              "condition": { "functionBody": "return model.machines[arrayIndices].connection === 'esphome' || !model.machines[arrayIndices].connection;" }
+            },
+            "esphomeKey": {
+              "title": "ESPHome API encryption key",
+              "type": "string",
+              "description": "The api: encryption: key: value of the proxy YAML",
+              "condition": { "functionBody": "return model.machines[arrayIndices].connection === 'esphome' || !model.machines[arrayIndices].connection;" }
+            },
+            "address": {
+              "title": "Machine MAC address (optional)",
+              "type": "string",
+              "placeholder": "00:A0:50:12:34:56",
+              "condition": { "functionBody": "return model.machines[arrayIndices].connection !== 'mqtt';" }
+            },
+            "bleName": {
+              "title": "Machine Bluetooth name (optional)",
+              "type": "string",
+              "placeholder": "D1533201",
+              "condition": { "functionBody": "return model.machines[arrayIndices].connection !== 'mqtt';" }
+            },
+            "productCode": {
+              "title": "Product code (optional, guessed from the name)",
+              "type": "string",
+              "condition": { "functionBody": "return model.machines[arrayIndices].connection !== 'mqtt';" }
+            },
+            "mqttId": {
+              "title": "Machine id in delonghi2mqtt",
+              "type": "string",
+              "condition": { "functionBody": "return model.machines[arrayIndices].connection === 'mqtt';" }
+            },
+            "beverages": {
+              "title": "Beverages (catalog names; default: Espresso Coffee, Regular Coffee, Long Coffee, Cappuccino, Latte Macchiato)",
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "sensors": { "title": "Water / grounds / beans / descaling / filter sensors", "type": "boolean", "default": true },
+            "autoPowerOn": {
+              "title": "Switch the machine on when a beverage is requested",
+              "type": "boolean",
+              "default": true,
+              "condition": { "functionBody": "return model.machines[arrayIndices].connection !== 'mqtt';" }
+            },
+            "allowPowerOff": {
+              "title": "Allow standby (does not work on every model)",
+              "type": "boolean",
+              "default": false,
+              "condition": { "functionBody": "return model.machines[arrayIndices].connection !== 'mqtt';" }
+            }
+          }
+        }
+      },
+      "mqtt": {
+        "title": "MQTT broker (only for the delonghi2mqtt connection)",
+        "type": "object",
+        "properties": {
+          "url": { "title": "URL", "type": "string", "placeholder": "mqtt://localhost:1883" },
+          "username": { "title": "Username", "type": "string" },
+          "password": { "title": "Password", "type": "string", "x-schema-form": { "type": "password" } },
+          "baseTopic": { "title": "Base topic", "type": "string", "default": "delonghi" }
+        }
+      }
+    }
+  }
+}

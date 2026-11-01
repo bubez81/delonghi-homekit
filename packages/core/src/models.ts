@@ -1,5 +1,4 @@
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import catalog from '../data/models.json' with { type: 'json' };
 import type { RecipeSpec } from './protocol.js';
 
 export interface MachineModel {
@@ -19,14 +18,8 @@ export interface MachineModel {
   recipes: Array<{ id: number; name: string; coffeeQty: number; milkQty: number }>;
 }
 
-let cache: MachineModel[] | undefined;
-
 export function loadModels(): MachineModel[] {
-  if (!cache) {
-    const file = fileURLToPath(new URL('../data/models.json', import.meta.url));
-    cache = (JSON.parse(readFileSync(file, 'utf8')) as { machines: MachineModel[] }).machines;
-  }
-  return cache;
+  return (catalog as unknown as { machines: MachineModel[] }).machines;
 }
 
 export function modelByProductCode(code?: string): MachineModel | undefined {

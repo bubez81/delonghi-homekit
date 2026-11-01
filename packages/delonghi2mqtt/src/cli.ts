@@ -1,14 +1,17 @@
 #!/usr/bin/env node
 import { parseArgs } from 'node:util';
+import {
+  type FoundMachine,
+  type Logger,
+  createMachine,
+  discoverEsphome,
+  discoverNoble,
+  hex,
+  identifyMachine,
+  suggestedConfig,
+} from 'delonghi-core';
 import { MqttBridge } from './bridge.js';
-import { type MachineConfig, loadConfig } from './config.js';
-import { Machine } from './machine.js';
-import { guessModel, modelByProductCode, recipesFor } from './models.js';
-import { discoverEsphome, discoverNoble, suggestedConfig, type FoundMachine } from './discovery.js';
-import { hex } from './protocol.js';
-import { EsphomeTransport } from './transports/esphome.js';
-import { NobleTransport } from './transports/noble.js';
-import { type BleTransport, type Logger } from './transports/transport.js';
+import { loadConfig } from './config.js';
 
 const LEVELS = { debug: 10, info: 20, warn: 30, error: 40 } as const;
 
@@ -20,58 +23,6 @@ function makeLogger(level: keyof typeof LEVELS): Logger {
     (l === 'error' || l === 'warn' ? console.error : console.log)(line, ...args);
   };
   return { debug: out('debug'), info: out('info'), warn: out('warn'), error: out('error') };
-}
-
-/** Fill in address/name/model of a machine that was not identified in the config. */
-async function identify(mc: MachineConfig, log: Logger): Promise<void> {
-  const needs = mc.transport.type === 'esphome' ? !mc.address : !mc.address && !mc.bleName;
-  if (!needs) return;
-  log.info(`[${mc.id}] no machine configured: searching (close the De'Longhi app on your phone)...`);
-  for (;;) {
-    const found: FoundMachine[] =
-      mc.transport.type === 'esphome'
-        ? await discoverEsphome(mc.transport, 60, undefined, true)
-        : await discoverNoble(60, undefined, true);
-    const m = found.find(f => f.bleName) ?? found[0];
-    if (m) {
-      mc.address ??= m.address || undefined;
-      mc.bleName ??= m.bleName || undefined;
-      mc.productCode ??= m.productCode;
-      log.info(
-        `[${mc.id}] found ${m.bleName || m.address} (${m.model ?? 'unknown model'}, rssi ${m.rssi}). ` +
-          `Add to the config to skip the search: ${JSON.stringify(suggestedConfig(m))}`,
-      );
-      return;
-    }
-    log.warn(`[${mc.id}] no De'Longhi machine found yet, retrying`);
-  }
-}
-
-function buildMachine(mc: MachineConfig, log: Logger): Machine {
-  const model = modelByProductCode(mc.productCode) ?? guessModel(mc.bleName);
-  if (model) log.info(`[${mc.id}] model: ${model.name} (${model.productCode})`);
-  else log.warn(`[${mc.id}] model unknown, only basic beverages available (set productCode)`);
-
-  const recipes = recipesFor(model).map(r => ({ ...r, ...(mc.recipeOverrides?.[r.name] ?? {}) }));
-  const target = { address: mc.address, bleName: mc.bleName };
-  let transport: BleTransport;
-  if (mc.transport.type === 'esphome') transport = new EsphomeTransport(target, mc.transport, log);
-  else transport = new NobleTransport(target, log, { scanTimeoutMs: mc.transport.scanTimeoutMs });
-
-  return new Machine(
-    {
-      id: mc.id,
-      name: mc.name ?? model?.name ?? "De'Longhi",
-      model,
-      recipes,
-      allowPowerOff: mc.allowPowerOff ?? false,
-      autoPowerOn: mc.autoPowerOn ?? true,
-      pollIntervalMs: (mc.pollIntervalSec ?? 30) * 1000,
-      statsIntervalMs: (mc.statsIntervalSec ?? 600) * 1000,
-    },
-    transport,
-    log,
-  );
 }
 
 async function run(configPath: string, verbose: boolean): Promise<void> {
@@ -89,8 +40,8 @@ async function run(configPath: string, verbose: boolean): Promise<void> {
     },
     log,
   );
-  for (const mc of cfg.machines) await identify(mc, log);
-  const machines = cfg.machines.map(mc => buildMachine(mc, log));
+  for (const mc of cfg.machines) await identifyMachine(mc, log);
+  const machines = cfg.machines.map(mc => createMachine(mc, log));
   for (const m of machines) {
     bridge.add(m);
     m.on('frame', (f: Buffer) => bridge.event(m, 'frame', { data: hex(f) }));

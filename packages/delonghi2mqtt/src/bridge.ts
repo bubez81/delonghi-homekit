@@ -1,7 +1,13 @@
 import mqtt, { type MqttClient } from 'mqtt';
-import type { Machine } from './machine.js';
-import { AUTO_OFF_OPTIONS, WATER_HARDNESS_OPTIONS, WATER_TEMPERATURE_OPTIONS, hex } from './protocol.js';
-import type { Logger } from './transports/transport.js';
+import {
+  AUTO_OFF_OPTIONS,
+  type Logger,
+  type Machine,
+  WATER_HARDNESS_OPTIONS,
+  WATER_TEMPERATURE_OPTIONS,
+  executeCommand,
+  machineInfo,
+} from 'delonghi-core';
 
 export interface MqttOptions {
   url: string;
@@ -80,26 +86,7 @@ export class MqttBridge {
   }
 
   private publishInfo(m: Machine): void {
-    const model = m.opts.model;
-    const info = {
-      id: m.opts.id,
-      name: m.opts.name,
-      model: model?.name ?? 'De\'Longhi coffee machine',
-      product_code: model?.productCode ?? null,
-      image_url: model?.imageUrl ?? null,
-      beverages: m.beverages,
-      features: {
-        power_off: m.opts.allowPowerOff,
-        auto_power_on: m.opts.autoPowerOn,
-        cup_light: model?.cupLight ?? false,
-        sounds: model?.buzzer ?? true,
-        energy_save: model?.energySaving ?? true,
-        auto_off: model?.autoOff ?? true,
-        water_hardness: model?.waterHardness ?? true,
-        filter: model?.filter ?? true,
-      },
-    };
-    this.client?.publish(this.t(m.opts.id, 'info'), JSON.stringify(info), { retain: true, qos: 1 });
+    this.client?.publish(this.t(m.opts.id, 'info'), JSON.stringify(machineInfo(m)), { retain: true, qos: 1 });
   }
 
   private publishState(m: Machine): void {
@@ -148,60 +135,12 @@ export class MqttBridge {
       }
     }
     this.log.info(`[${id}] command ${command} ${value}`);
-    const on = /^(on|true|1)$/i.test(value);
-
     try {
-      switch (command) {
-        case 'power':
-          if (on) await m.powerOn();
-          else await m.powerOff();
-          break;
-        case 'power_on':
-          await m.powerOn();
-          break;
-        case 'power_off':
-          await m.powerOff();
-          break;
-        case 'brew':
-        case 'beverage':
-          if (!value || value === 'none') await m.cancelBeverage();
-          else {
-            this.event(m, 'brew_requested', { beverage: value });
-            await m.brewBeverage(value);
-          }
-          break;
-        case 'cancel':
-          await m.cancelBeverage();
-          break;
-        case 'profile':
-          await m.selectProfile(value);
-          break;
-        case 'sounds':
-        case 'energy_save':
-        case 'cup_light':
-          await m.setSwitchSetting(command, on);
-          break;
-        case 'auto_off':
-          await m.setAutoOff(value);
-          break;
-        case 'water_hardness':
-          await m.setWaterHardness(value);
-          break;
-        case 'water_temperature':
-          await m.setWaterTemperature(value);
-          break;
-        case 'refresh':
-          await m.readSettings();
-          await m.refreshStatistics(true);
-          break;
-        case 'raw': {
-          const reply = await m.sendRaw(value);
-          this.event(m, 'raw_reply', { request: value, reply: reply ? hex(reply) : null });
-          break;
-        }
-        default:
-          this.log.warn(`[${id}] unknown command "${command}"`);
+      if ((command === 'brew' || command === 'beverage') && value && value !== 'none') {
+        this.event(m, 'brew_requested', { beverage: value });
       }
+      const res = await executeCommand(m, command, value);
+      if (command === 'raw') this.event(m, 'raw_reply', { request: value, reply: res.reply ?? null });
     } catch (err) {
       const message = (err as Error).message;
       this.log.warn(`[${id}] ${command} failed: ${message}`);

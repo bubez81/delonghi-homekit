@@ -1,14 +1,20 @@
 # delonghi2mqtt
 
 Bridge between De'Longhi Bluetooth coffee machines and MQTT, with Home Assistant
-MQTT discovery. Part of [delonghi-homekit](https://github.com/bubez81/delonghi-homekit) —
-see there for the overview and the Bluetooth setup.
+MQTT discovery. Use it when both Home Assistant and Homebridge need the machine
+(it accepts one Bluetooth connection); for Apple Home alone use
+[homebridge-delonghi-coffee](../homebridge-delonghi-coffee) directly. The
+Bluetooth requirements (ESPHome proxy or local adapter) are described there.
 
 ```sh
-npm install -g delonghi2mqtt
-delonghi2mqtt scan [--esphome <host> --key <api key>]   # find machines
-delonghi2mqtt -c config.json [-v]                       # run
+git clone https://github.com/bubez81/delonghi-homekit && cd delonghi-homekit
+npm install && npm run build
+node packages/delonghi2mqtt/dist/cli.js scan [--esphome <host> --key <api key>]   # find machines
+node packages/delonghi2mqtt/dist/cli.js -c config.json [-v]                       # run
 ```
+
+In Homebridge, set the machine's connection to `mqtt` with `mqttId` equal to the
+bridge machine `id`.
 
 ## Configuration
 
@@ -89,7 +95,7 @@ Description=delonghi2mqtt
 After=network-online.target bluetooth.target
 
 [Service]
-ExecStart=/usr/bin/env delonghi2mqtt -c /etc/delonghi2mqtt/config.json
+ExecStart=/usr/bin/node /opt/delonghi-homekit/packages/delonghi2mqtt/dist/cli.js -c /etc/delonghi2mqtt/config.json
 Restart=always
 User=delonghi
 
