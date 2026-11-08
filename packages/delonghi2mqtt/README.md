@@ -65,6 +65,10 @@ bridge machine `id`.
 | `autoPowerOn` | a beverage requested while the machine is off switches it on and starts once ready |
 | `recipeOverrides` | per-beverage `coffeeQty`, `milkQty`, `hotWaterQty` (ml) and `taste` (1–5) |
 
+`mqtt.watchdogSec` (default `180`, `0` disables): when the broker stays
+unreachable that long the bridge exits, so launchd/systemd (`KeepAlive` /
+`Restart=always`) starts it again from scratch.
+
 `MQTT_USERNAME`, `MQTT_PASSWORD` and `ESPHOME_API_KEY` environment variables are
 used when the values are missing from the file.
 

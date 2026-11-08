@@ -17,6 +17,9 @@ export interface MqttOptions {
   baseTopic: string;
   haDiscovery: boolean;
   haDiscoveryPrefix: string;
+  /** Exit the process when the broker has been unreachable this long, so the
+   * service manager (launchd/systemd) restarts the bridge from scratch. 0 = never. */
+  watchdogSec?: number;
 }
 
 /**
@@ -32,6 +35,8 @@ export class MqttBridge {
   private client?: MqttClient;
   private readonly machines = new Map<string, Machine>();
   private readonly lastProfiles = new Map<string, string>();
+  private downSince: number | undefined = Date.now();
+  private watchdog?: NodeJS.Timeout;
 
   constructor(
     private readonly opts: MqttOptions,
@@ -58,6 +63,7 @@ export class MqttBridge {
     this.client = client;
 
     client.on('connect', () => {
+      this.downSince = undefined;
       this.log.info(`mqtt: connected to ${this.opts.url}`);
       client.publish(this.t('bridge', 'state'), 'online', { retain: true, qos: 1 });
       client.subscribe([this.t('+', 'set', '+'), this.t('+', 'set')]);
@@ -66,10 +72,22 @@ export class MqttBridge {
     });
     client.on('error', err => this.log.warn(`mqtt: ${err.message}`));
     client.on('offline', () => this.log.warn('mqtt: offline'));
+    client.on('close', () => { this.downSince ??= Date.now(); });
+    const limit = (this.opts.watchdogSec ?? 180) * 1000;
+    if (limit > 0) {
+      this.watchdog = setInterval(() => {
+        if (this.downSince !== undefined && Date.now() - this.downSince > limit) {
+          this.log.error(`mqtt: broker unreachable for ${Math.round((Date.now() - this.downSince) / 1000)} s, exiting so the service manager restarts the bridge`);
+          process.exit(2);
+        }
+      }, 15_000);
+      this.watchdog.unref();
+    }
     client.on('message', (topic, payload) => void this.onMessage(topic, payload.toString()));
   }
 
   async stop(): Promise<void> {
+    clearInterval(this.watchdog);
     const c = this.client;
     if (!c) return;
     for (const m of this.machines.values()) {

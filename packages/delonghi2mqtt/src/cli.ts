@@ -37,6 +37,7 @@ async function run(configPath: string, verbose: boolean): Promise<void> {
       baseTopic: cfg.mqtt.baseTopic ?? 'delonghi',
       haDiscovery: cfg.mqtt.haDiscovery ?? true,
       haDiscoveryPrefix: cfg.mqtt.haDiscoveryPrefix ?? 'homeassistant',
+      watchdogSec: cfg.mqtt.watchdogSec ?? 180,
     },
     log,
   );
