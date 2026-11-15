@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.3
+
+- Profile names are requested again when the machine wakes up if it was in
+  standby at connect time (the machine does not answer 0xA4 in standby, per
+  home_assistant_delonghi_primadonna DEBUG_NOTES).
+
 ## 0.1.2
 
 - Milk beverages: tags sent in ascending order with the milk carafe accessory

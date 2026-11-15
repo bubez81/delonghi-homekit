@@ -377,6 +377,13 @@ export class Machine extends EventEmitter {
       }
     }
 
+    // Profile names (0xA4) are not answered while the machine is in standby:
+    // if we connected then, ask again once it is awake.
+    if (this.state.power === false && m.status > 0 && [...this.profileMap.entries()].some(([i, n]) => n === `Profile ${i}`)) {
+      const n = this.opts.model?.nProfiles ?? 4;
+      setTimeout(() => void this.request(COMMANDS.profileNames(1, n), f => f[2] === CMD.PROFILE_NAMES), 3_000);
+    }
+
     this.setState({
       power: m.status > 0,
       machine_state: machineState,
