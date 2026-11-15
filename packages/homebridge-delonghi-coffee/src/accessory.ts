@@ -52,6 +52,8 @@ export class CoffeeAccessory {
   private readonly powerService: Service;
   private readonly dispensingService: Service;
   private readonly sensors: Sensor[] = [];
+  /** Beverage "on" writes collected for a short window (see setBeverage). */
+  private brewBatch?: { bevs: Set<string>; timer: NodeJS.Timeout };
   private readonly beverageServices = new Map<string, Service>();
   private readonly C;
   private readonly S;
@@ -201,19 +203,40 @@ export class CoffeeAccessory {
 
   private setBeverage(bev: string, on: boolean): void {
     if (!this.reachable()) throw this.commError();
-    const current = this.link.state?.beverage;
-    if (on) {
-      if (current && current !== bev) {
-        this.platform.log.warn(`[${this.key}] busy with ${current}, ignoring ${bev}`);
-        setTimeout(() => this.refresh(), 500);
-        return;
+    if (!on) {
+      if (this.link.state?.beverage === bev) {
+        this.platform.log.info(`[${this.key}] cancel ${bev}`);
+        this.link.send('cancel');
       }
-      this.platform.log.info(`[${this.key}] brew ${bev}`);
-      this.link.send('brew', bev);
-    } else if (current === bev) {
-      this.platform.log.info(`[${this.key}] cancel ${bev}`);
-      this.link.send('cancel');
+      return;
     }
+    // HomeKit sometimes repeats the same write several times in a burst, and
+    // "turn on <accessory>" (Siri, scenes) switches on every beverage at once.
+    // Collect the writes briefly: one beverage brews once, several are ignored.
+    if (!this.brewBatch) {
+      this.brewBatch = {
+        bevs: new Set(),
+        timer: setTimeout(() => {
+          const bevs = [...this.brewBatch!.bevs];
+          this.brewBatch = undefined;
+          this.startBeverage(bevs);
+        }, 400),
+      };
+    }
+    this.brewBatch.bevs.add(bev);
+  }
+
+  private startBeverage(bevs: string[]): void {
+    const current = this.link.state?.beverage;
+    if (bevs.length > 1) {
+      this.platform.log.warn(`[${this.key}] ${bevs.length} beverages switched on together (scene or "turn on all"?), ignoring`);
+    } else if (current && current !== bevs[0]) {
+      this.platform.log.warn(`[${this.key}] busy with ${current}, ignoring ${bevs[0]}`);
+    } else if (current !== bevs[0]) {
+      this.platform.log.info(`[${this.key}] brew ${bevs[0]}`);
+      this.link.send('brew', bevs[0]);
+    }
+    setTimeout(() => this.refresh(), 500);
   }
 
   /** Push the cached state (or "No Response") to every characteristic. */

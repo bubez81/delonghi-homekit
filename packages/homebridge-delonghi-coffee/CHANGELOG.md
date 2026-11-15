@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.4
+
+- Beverage switches ignore HomeKit write bursts: the same beverage requested
+  several times in a row brews once, and several beverages switched on
+  together (Siri "turn on <machine>", scenes) are ignored instead of starting
+  the first one.
+
 ## 0.1.3
 
 - Profile names are requested again when the machine wakes up if it was in
