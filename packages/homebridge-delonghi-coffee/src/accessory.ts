@@ -73,14 +73,16 @@ export class CoffeeAccessory {
     const uuid = api.hap.uuid.generate(`delonghi:${key}:main`);
     let acc = platform.takeCached(uuid);
     const isNew = !acc;
-    acc ??= new api.platformAccessory(displayName, uuid, api.hap.Categories.SWITCH);
+    acc ??= new api.platformAccessory(info.model || displayName, uuid, api.hap.Categories.SWITCH);
     this.acc = acc;
+    acc.displayName = info.model || displayName;
     acc.getService(this.S.AccessoryInformation)!
+      .setCharacteristic(this.C.Name, acc.displayName)
       .setCharacteristic(this.C.Manufacturer, "De'Longhi")
       .setCharacteristic(this.C.Model, info.model)
       .setCharacteristic(this.C.SerialNumber, info.product_code ?? key);
 
-    this.powerService = this.service(this.S.Switch, 'power', displayName);
+    this.powerService = this.service(this.S.Switch, 'power', 'Macchina del caffè');
     this.powerService
       .getCharacteristic(this.C.On)
       .onGet(() => this.read(s => !!s.power))
@@ -116,9 +118,10 @@ export class CoffeeAccessory {
 
   private service(type: WithUUID<typeof Service>, subtype: string, name: string): Service {
     const svc = this.acc.getServiceById(type, subtype) ?? this.acc.addService(type, name, subtype);
+    svc.displayName = name;
     svc.setCharacteristic(this.C.Name, name);
     if (!svc.testCharacteristic(this.C.ConfiguredName)) svc.addOptionalCharacteristic(this.C.ConfiguredName);
-    if (!svc.getCharacteristic(this.C.ConfiguredName).value) svc.setCharacteristic(this.C.ConfiguredName, name);
+    svc.setCharacteristic(this.C.ConfiguredName, name);
     return svc;
   }
 
@@ -172,6 +175,10 @@ export class CoffeeAccessory {
 
   /** Call when link.info changed (e.g. a new info message from the bridge). */
   infoChanged(): void {
+    this.acc.displayName = this.link.info.model || this.displayName;
+    this.acc.getService(this.S.AccessoryInformation)!
+      .setCharacteristic(this.C.Name, this.acc.displayName)
+      .setCharacteristic(this.C.Model, this.link.info.model);
     this.syncBeverages();
   }
 
